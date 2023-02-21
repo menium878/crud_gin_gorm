@@ -38,7 +38,57 @@ func PostRead(c *gin.Context) {
 		return
 	}
 	c.JSON(200, gin.H{
-		"post": posts,
+		"posts": posts,
 	})
 
+}
+
+func PostReadOne(c *gin.Context) {
+	id := c.Param("id")
+
+	var post models.Post
+	result := initializers.DB.First(&post, id)
+
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+	c.JSON(200, gin.H{
+		"post": post,
+	})
+}
+
+func PostUpdate(c *gin.Context) {
+	id := c.Param("id")
+
+	var body struct {
+		Body  string `json:"body"`
+		Title string `json:"title"`
+	}
+
+	c.Bind(&body)
+
+	var post models.Post
+	result := initializers.DB.First(&post, id)
+
+	initializers.DB.Model(&post).Updates(models.Post{Title: body.Title, Body: body.Body})
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+	c.JSON(200, gin.H{
+		"post": post,
+	})
+}
+
+func PostDelete(c *gin.Context) {
+	id := c.Param("id")
+	result := initializers.DB.Delete(&models.Post{}, id)
+	if result.Error != nil {
+		c.Status(400)
+		return
+	}
+	c.JSON(200, gin.H{
+		"success": true,
+	})
 }
